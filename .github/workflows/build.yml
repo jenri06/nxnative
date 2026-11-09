@@ -1,10 +1,10 @@
 name: Build nxnative IPA
 on:
-  workflow_dispatch: # Allows you to start the build manually
+  workflow_dispatch:
 
 jobs:
   build-ios:
-    runs-on: macos-14 # Uses GitHub's cloud-hosted Mac
+    runs-on: macos-14
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
@@ -21,12 +21,17 @@ jobs:
 
       - name: Inject Keys
         run: |
+          mkdir -p keys
           echo "${{ secrets.PROD_KEYS }}" > keys/prod.keys
+
+      - name: Download Large Game File
+        run: |
+          curl -L -o game.nsp "https://pixeldrain.com/api/file/cEDMkyi6"
+
 
       - name: Compile and Package Game
         run: |
-          # Replace 'game.nsp' with the specific argument or configuration for your game
-          python build.py --target ios --input game.nsp 
+          python build.py --target ios --input game.nsp
 
       - name: Upload IPA Artifact
         uses: actions/upload-artifact@v4
