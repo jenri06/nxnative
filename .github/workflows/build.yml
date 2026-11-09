@@ -1,0 +1,35 @@
+name: Build nxnative IPA
+on:
+  workflow_dispatch: # Allows you to start the build manually
+
+jobs:
+  build-ios:
+    runs-on: macos-14 # Uses GitHub's cloud-hosted Mac
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set Up Python & Dependencies
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install Toolchain
+        run: |
+          brew install llvm
+          pip install -r requirements.txt
+
+      - name: Inject Keys
+        run: |
+          echo "${{ secrets.PROD_KEYS }}" > keys/prod.keys
+
+      - name: Compile and Package Game
+        run: |
+          # Replace 'game.nsp' with the specific argument or configuration for your game
+          python build.py --target ios --input game.nsp 
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: nxnative-game-payload
+          path: build/outputs/*.ipa
